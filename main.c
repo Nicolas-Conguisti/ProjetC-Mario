@@ -8,83 +8,103 @@
 const int WINDOW_WIDTH = 1200;
 const int WINDOW_HEIGHT = 800;
 
-const int RECT_WIDTH = 200;
-const int RECT_HEIGHT = 150;
+const int RECT_WIDTH = 50;
+const int RECT_HEIGHT = 70;
+
+//Type Color
+typedef struct {
+    int R;
+	int G;
+	int B;
+	int transparency;
+} Color;
+
+//Type Character
+typedef struct {
+    int x;
+	int y;
+    int width;
+	int height;
+    int way_x;
+    int way_y;
+	Color color;
+
+} Character;
 
 
-void update(SDL_Renderer * renderer, int x, int y){
+//Fonction appelée à chaque frame, elle actualise la fenetre
+void updateCharacter(SDL_Renderer * renderer, Character character){
 
+	//Créer la fenetre
 	SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
 	SDL_RenderClear(renderer);
 
-	// Couleur pour le rectangle (rouge)
-	SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);
-	SDL_Rect rect = { x, y, RECT_WIDTH, RECT_HEIGHT }; // x, y, largeur, hauteur
+	//Faire apparaitre le character
+	SDL_SetRenderDrawColor(renderer, character.color.R, character.color.G, character.color.B, character.color.transparency);
+	SDL_Rect rect = { character.x, character.y, character.width, character.height }; // x, y, largeur, hauteur
 	SDL_RenderFillRect(renderer, &rect);
-
 }
 
-void movePosition(int * x, int * y, int * way_x, int * way_y){
+//Fonction qui fait bouger le character
+void movePositionCharacter(Character * character){
 
-	// changement de direction lorsque le rectangle sort de l'écran
-	if((*x) > WINDOW_WIDTH - RECT_WIDTH){
-		(*way_x) = 2;
+	// changement de direction lorsque le character sort de la fenetre
+	if(character->x > WINDOW_WIDTH - RECT_WIDTH){
+		character->way_x = 2;
 	}
-
-	if((*y) > WINDOW_HEIGHT - RECT_HEIGHT){
-		(*way_y) = 2;
+	if(character->y > WINDOW_HEIGHT - RECT_HEIGHT){
+		character->way_y = 2;
 	}
-
-	if((*x) < 0){
-		(*way_x) = 1;
+	if(character->x < 0){
+		character->way_x = 1;
 	}
-
-	if((*y) < 0){
-		(*way_y) = 1;
+	if(character->y < 0){
+		character->way_y = 1;
 	}
 
 	//Avancement de x et y dans la direction indiquée
-	if((*way_x) == 1){
-		(*x) += 2;
+	if(character->way_x == 1){
+		character->x += 2;
 	}
 	else{
-		(*x) -= 2;
+		character->x -= 2;
 	}
 
-	if((*way_y) == 1){
-		(*y) += 2;
+	if(character->way_y == 1){
+		character->y += 2;
 	}
 	else{
-		(*y) -= 2;
+		character->y -= 2;
 	}
         
 }
 
+//Fonction qui vérifie si la fenetre a été fermée
 void verifyEventQuit(SDL_Event event, bool * running){
 	if(event.type == SDL_QUIT){
 		(*running) = false;
 	}
 }
 
-void verifyEventKeyPressed(SDL_Event event, bool * running, int * x, int * y){
-	// Gestion des événements clavier
+//Fonction qui vérifie les événements clavier
+void verifyEventKeyPressed(SDL_Event event, bool * running, Character * character){
 	if (event.type == SDL_KEYDOWN) {
 		switch (event.key.keysym.sym) {
 
 			case SDLK_LEFT:
-				(*x) -= 20;
+				character->x -= 20;
 				break;
 
 			case SDLK_RIGHT:
-				(*x) += 20;
+				character->x += 20;
 				break;
 
 			case SDLK_UP:
-				(*y) -= 20;
+				character->y -= 20;
 				break;
 
 			case SDLK_DOWN:
-				(*y) += 20;
+				character->y += 20;
 				break;
 
 			case SDLK_ESCAPE:
@@ -96,7 +116,6 @@ void verifyEventKeyPressed(SDL_Event event, bool * running, int * x, int * y){
 		}
 	}
 }
-
 
 
 
@@ -113,23 +132,19 @@ int main(int argc, const char * argv[]) {
 	bool running = true;
 	SDL_Event event;
 
-	//Initialisation des positions
-	int x = 0;
-	int y = 0;
-	//Initialisation des directions (1 pour avant, 2 pour recul)
-	int way_x = 1;
-	int way_y = 1;
-	
+	//Initialisation du character
+	Color color = {255, 0, 0, 255};
+	Character character = {0, 0, RECT_WIDTH, RECT_HEIGHT, 1, 1, color};  // x, y, width, height, way_x, way_y, color
+
 	while(running){
 		
 		while(SDL_PollEvent(&event)){
 			verifyEventQuit(event, &running);
-			verifyEventKeyPressed(event, &running, &x, &y);
+			verifyEventKeyPressed(event, &running, &character);
 		}
 
-		movePosition(&x, &y, &way_x, &way_y);
-
-		update(renderer, x, y);
+		movePositionCharacter(&character);
+		updateCharacter(renderer, character);
 
 		SDL_RenderPresent(renderer);
 	}
