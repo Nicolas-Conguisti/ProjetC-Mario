@@ -24,13 +24,6 @@ void update(SDL_Renderer * renderer, int x, int y){
 
 }
 
-bool verifyEventQuit(SDL_Event event, bool running){
-	if(event.type == SDL_QUIT){
-		running = false;
-	}
-	return running;
-}
-
 void movePosition(int * x, int * y, int * way_x, int * way_y){
 
 	// changement de direction lorsque le rectangle sort de l'écran
@@ -67,6 +60,44 @@ void movePosition(int * x, int * y, int * way_x, int * way_y){
         
 }
 
+void verifyEventQuit(SDL_Event event, bool * running){
+	if(event.type == SDL_QUIT){
+		(*running) = false;
+	}
+}
+
+void verifyEventKeyPressed(SDL_Event event, bool * running, int * x, int * y){
+	// Gestion des événements clavier
+	if (event.type == SDL_KEYDOWN) {
+		switch (event.key.keysym.sym) {
+
+			case SDLK_LEFT:
+				(*x) -= 20;
+				break;
+
+			case SDLK_RIGHT:
+				(*x) += 20;
+				break;
+
+			case SDLK_UP:
+				(*y) -= 20;
+				break;
+
+			case SDLK_DOWN:
+				(*y) += 20;
+				break;
+
+			case SDLK_ESCAPE:
+				(*running) = false;
+				break;
+
+			default:
+				break;
+		}
+	}
+}
+
+
 
 
 int main(int argc, const char * argv[]) {
@@ -92,7 +123,8 @@ int main(int argc, const char * argv[]) {
 	while(running){
 		
 		while(SDL_PollEvent(&event)){
-			running = verifyEventQuit(event, running);
+			verifyEventQuit(event, &running);
+			verifyEventKeyPressed(event, &running, &x, &y);
 		}
 
 		movePosition(&x, &y, &way_x, &way_y);
