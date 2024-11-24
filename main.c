@@ -11,14 +11,6 @@ const int WINDOW_HEIGHT = 800;
 const int RECT_WIDTH = 50;
 const int RECT_HEIGHT = 70;
 
-//Type Color
-typedef struct {
-    int R;
-	int G;
-	int B;
-	int transparency;
-} Color;
-
 //Type Character
 typedef struct {
     int x;
@@ -27,7 +19,7 @@ typedef struct {
 	int height;
     int way_x;
     int way_y;
-	Color color;
+	SDL_Color color;
 
 } Character;
 
@@ -40,7 +32,7 @@ void updateCharacter(SDL_Renderer * renderer, Character character){
 	SDL_RenderClear(renderer);
 
 	//Faire apparaitre le character
-	SDL_SetRenderDrawColor(renderer, character.color.R, character.color.G, character.color.B, character.color.transparency);
+	SDL_SetRenderDrawColor(renderer, character.color.r, character.color.g, character.color.b, character.color.a);
 	SDL_Rect rect = { character.x, character.y, character.width, character.height }; // x, y, largeur, hauteur
 	SDL_RenderFillRect(renderer, &rect);
 }
@@ -125,7 +117,7 @@ int main(int argc, const char * argv[]) {
 	SDL_Init(SDL_INIT_VIDEO);
 	SDL_Window *window;
 	SDL_Renderer *renderer;
-	window = SDL_CreateWindow("Projet C !!!", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
+	window = SDL_CreateWindow(" Mario is real", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
         WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_OPENGL); //SDL_WINDOW_FULLSCREEN
 
 	renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
@@ -133,7 +125,7 @@ int main(int argc, const char * argv[]) {
 	SDL_Event event;
 
 	//Initialisation du character
-	Color color = {255, 0, 0, 255};
+	SDL_Color color = {255, 0, 0, 255};
 	Character character = {0, 0, RECT_WIDTH, RECT_HEIGHT, 1, 1, color};  // x, y, width, height, way_x, way_y, color
 
 	while(running){
