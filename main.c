@@ -5,6 +5,9 @@
 #include <stdio.h>
 #include <stdbool.h>
 
+const int GRAVITY_FORCE = 5;
+const int POS_GROUND = 500;
+
 const int WINDOW_WIDTH = 1200;
 const int WINDOW_HEIGHT = 800;
 
@@ -86,7 +89,7 @@ void movePositionMap(Map * map, Tree * tree){
 
 //Fonction qui fait bouger automatiquement le character
 void movePositionCharacter(Character * character){
-
+/*
 	// changement de direction lorsque le character sort de la fenetre
 	if(character->x > WINDOW_WIDTH - CHARACTER_WIDTH){
 		character->way_x = 2;
@@ -115,7 +118,12 @@ void movePositionCharacter(Character * character){
 	else{
 		character->y -= CHARACTER_SPEED;
 	}
-        
+*/
+
+	if(character->y < POS_GROUND - CHARACTER_HEIGHT){
+		character->y += GRAVITY_FORCE;
+	}
+
 }
 
 
@@ -174,7 +182,7 @@ int main(int argc, const char * argv[]) {
 
 	//Initialisation de la Map
 	SDL_Color colorMap = {0, 255, 20, 255};
-	Map map = {0, 500, MAP_WIDTH, MAP_HEIGHT, colorMap};  // x, y, width, height, color
+	Map map = {0, POS_GROUND, MAP_WIDTH, MAP_HEIGHT, colorMap};  // x, y, width, height, color
 
 	SDL_Color colorTree = {100, 255, 0, 255};
 	Tree tree = {2000, 420, 30, 80, colorTree};  // x, y, width, height, color
@@ -190,7 +198,7 @@ int main(int argc, const char * argv[]) {
 			verifyEventKeyPressed(event, &running, &character);
 		}
 
-		//movePositionCharacter(&character);
+		movePositionCharacter(&character);
 
 		movePositionMap(&map, &tree);
 		update(renderer, map, character, tree);
