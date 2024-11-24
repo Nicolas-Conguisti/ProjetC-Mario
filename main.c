@@ -38,9 +38,19 @@ typedef struct {
 
 } Map;
 
+//Type Tree
+typedef struct {
+    int x;
+	int y;
+    int width;
+	int height;
+	SDL_Color color;
+
+} Tree;
+
 
 //Fonction appelée à chaque frame, elle actualise la fenetre en faisant apparaitre les éléments
-void update(SDL_Renderer * renderer, Map map, Character character){
+void update(SDL_Renderer * renderer, Map map, Character character, Tree tree){
 
 	//Créer la fenetre
 	SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
@@ -55,13 +65,24 @@ void update(SDL_Renderer * renderer, Map map, Character character){
 	SDL_SetRenderDrawColor(renderer, map.color.r, map.color.g, map.color.b, map.color.a);
 	SDL_Rect rectMap = { map.x, map.y, map.width, map.height }; // x, y, largeur, hauteur
 	SDL_RenderFillRect(renderer, &rectMap);
+
+	//Faire apparaitre l'arbre
+	SDL_SetRenderDrawColor(renderer, tree.color.r, tree.color.g, tree.color.b, tree.color.a);
+	SDL_Rect rectTree = { tree.x, tree.y, tree.width, tree.height }; // x, y, largeur, hauteur
+	SDL_RenderFillRect(renderer, &rectTree);
 }
+
 
 //Fonction qui fait bouger automatiquement la map
-void movePositionMap(Map * map){
+void movePositionMap(Map * map, Tree * tree){
 
 	map->x -= MAP_SPEED;
+
+	//déplacement de l'arbre
+	tree->x -= MAP_SPEED;
+
 }
+
 
 //Fonction qui fait bouger automatiquement le character
 void movePositionCharacter(Character * character){
@@ -96,6 +117,7 @@ void movePositionCharacter(Character * character){
 	}
         
 }
+
 
 //Fonction qui vérifie si la fenetre a été fermée
 void verifyEventQuit(SDL_Event event, bool * running){
@@ -151,8 +173,11 @@ int main(int argc, const char * argv[]) {
 	SDL_Event event;
 
 	//Initialisation de la Map
-	SDL_Color colorMap = {0, 255, 0, 255};
+	SDL_Color colorMap = {0, 255, 20, 255};
 	Map map = {0, 500, MAP_WIDTH, MAP_HEIGHT, colorMap};  // x, y, width, height, color
+
+	SDL_Color colorTree = {100, 255, 0, 255};
+	Tree tree = {2000, 420, 30, 80, colorTree};  // x, y, width, height, color
 
 	//Initialisation du character
 	SDL_Color colorCharacter = {255, 0, 0, 255};
@@ -167,8 +192,8 @@ int main(int argc, const char * argv[]) {
 
 		//movePositionCharacter(&character);
 
-		movePositionMap(&map);
-		update(renderer, map, character);
+		movePositionMap(&map, &tree);
+		update(renderer, map, character, tree);
 
 		SDL_RenderPresent(renderer);
 	}
