@@ -27,6 +27,8 @@ typedef struct {
 	int height;
     int way_x;
     int way_y;
+	bool isJumping;
+	int jumpForce;
 	SDL_Color color;
 
 } Character;
@@ -53,7 +55,7 @@ typedef struct {
 
 
 //Fonction appelée à chaque frame, elle actualise la fenetre en faisant apparaitre les éléments
-void update(SDL_Renderer * renderer, Map map, Character character, Tree tree){
+void resfreshElements(SDL_Renderer * renderer, Map map, Character character, Tree tree){
 
 	//Créer la fenetre
 	SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
@@ -119,11 +121,36 @@ void movePositionCharacter(Character * character){
 		character->y -= CHARACTER_SPEED;
 	}
 */
-
-	if(character->y < POS_GROUND - CHARACTER_HEIGHT){
-		character->y += GRAVITY_FORCE;
+/*
+	if(character->jumpForce > 0){
+		character->isJumping = true;
+		character->jumpForce -= 1;
 	}
 
+	if(character->jumpForce == 0 || character->y == POS_GROUND - CHARACTER_HEIGHT){
+		character->isJumping == false;
+	}
+*/
+	
+
+	//On déclanche le saut
+	if(character->jumpForce > 0){
+
+		character->jumpForce -= 50;
+		character->isJumping = true;
+		character->y -= (CHARACTER_SPEED + character->jumpForce/2);
+	}
+
+	//Si le character est au sol, isJumping est false
+	if(character->y + CHARACTER_HEIGHT >= POS_GROUND){
+		character->isJumping = false;
+		character->y = POS_GROUND - CHARACTER_HEIGHT;
+	}
+
+	//Si le character est en saut (phase descendante), on applique la gravité
+	if(character->isJumping && character->jumpForce == 0){
+		character->y += GRAVITY_FORCE;
+	}
 }
 
 
@@ -148,13 +175,18 @@ void verifyEventKeyPressed(SDL_Event event, bool * running, Character * characte
 				break;
 
 			case SDLK_UP:
-				character->y -= CHARACTER_SPEED;
-				break;
 
+				if(character->isJumping == false){
+					if(character->jumpForce <= 400){
+						character->jumpForce += 200;
+					}
+				}
+				break;
+			
 			case SDLK_DOWN:
 				character->y += CHARACTER_SPEED;
 				break;
-
+			
 			case SDLK_ESCAPE:
 				(*running) = false;
 				break;
@@ -189,7 +221,7 @@ int main(int argc, const char * argv[]) {
 
 	//Initialisation du character
 	SDL_Color colorCharacter = {255, 0, 0, 255};
-	Character character = {0, 0, CHARACTER_WIDTH, CHARACTER_HEIGHT, 1, 1, colorCharacter};  // x, y, width, height, way_x, way_y, color
+	Character character = {0, 0, CHARACTER_WIDTH, CHARACTER_HEIGHT, 1, 1, true, 0, colorCharacter};  // x, y, width, height, way_x, way_y, isJumping, jumpForce, color
 
 	while(running){
 		
@@ -201,7 +233,7 @@ int main(int argc, const char * argv[]) {
 		movePositionCharacter(&character);
 
 		movePositionMap(&map, &tree);
-		update(renderer, map, character, tree);
+		resfreshElements(renderer, map, character, tree);
 
 		SDL_RenderPresent(renderer);
 	}
