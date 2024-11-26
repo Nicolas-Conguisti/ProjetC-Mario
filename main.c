@@ -133,10 +133,8 @@ void movePositionCharacter(Character * character){
 */
 
 	//On déclanche le saut
-	if(character->jumpForce > 0){
-
-		character->jumpForce -= 50;
-		character->isJumping = true;
+	if(character->isJumping){
+		character->jumpForce -= 5;
 		character->y -= (CHARACTER_SPEED + character->jumpForce/2);
 	}
 
@@ -162,7 +160,7 @@ void verifyEventQuit(SDL_Event event, bool * running){
 
 //Fonction qui vérifie les événements clavier
 void verifyEventKeyPressed(SDL_Event event, bool * running, Character * character){
-	if (event.type == SDL_KEYDOWN) {
+	if (event.type == SDL_KEYDOWN || event.type == SDL_KEYUP) {
 		switch (event.key.keysym.sym) {
 
 			case SDLK_LEFT:
@@ -175,11 +173,23 @@ void verifyEventKeyPressed(SDL_Event event, bool * running, Character * characte
 
 			case SDLK_UP:
 
-				if(character->isJumping == false){
-					if(character->jumpForce <= 400){
-						character->jumpForce += 200;
+
+				//Si on relache le jump
+				if(event.type == SDL_KEYUP){
+					character->jumpForce += 10;
+					character->isJumping = true;
+				}
+				
+
+				//Si on canalise le jump
+				if(event.type == SDL_KEYDOWN){
+					if(character->isJumping == false){
+						if(character->jumpForce <= 40){
+							character->jumpForce += 10;
+						}
 					}
 				}
+
 				break;
 			
 			case SDLK_DOWN:
