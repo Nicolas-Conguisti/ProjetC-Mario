@@ -5,20 +5,20 @@
 #include <stdio.h>
 #include <stdbool.h>
 
-const int GRAVITY_FORCE = 5;
-const int POS_GROUND = 500;
+#define GRAVITY_FORCE 5
+#define POS_GROUND 500
 
-const int WINDOW_WIDTH = 1200;
-const int WINDOW_HEIGHT = 800;
+#define WINDOW_WIDTH 1200
+#define WINDOW_HEIGHT 800
 
-const int CHARACTER_WIDTH = 50;
-const int CHARACTER_HEIGHT = 70;
-const int CHARACTER_SPEED = 40;
+#define CHARACTER_WIDTH 50
+#define CHARACTER_HEIGHT 70
+#define CHARACTER_SPEED 40
 
-const int GROUND_WIDTH = 5000;
-const int GROUND_HEIGHT = 200;
-const int GROUND_SPEED = 2;
-//const int NB_OBSTACLES = 1;
+#define GROUND_WIDTH 5000
+#define GROUND_HEIGHT 200
+#define GROUND_SPEED 2
+
 #define NB_OBSTACLES 1
 
 //Type Character
@@ -179,7 +179,6 @@ void verifyEventKeyPressed(SDL_Event event, bool * running, Character * characte
 					character->jumpForce += 10;
 					character->isJumping = true;
 				}
-				
 
 				//Si on canalise le jump
 				if(event.type == SDL_KEYDOWN){
