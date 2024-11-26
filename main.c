@@ -18,6 +18,8 @@ const int CHARACTER_SPEED = 40;
 const int GROUND_WIDTH = 5000;
 const int GROUND_HEIGHT = 200;
 const int GROUND_SPEED = 2;
+//const int NB_OBSTACLES = 1;
+#define NB_OBSTACLES 1
 
 //Type Character
 typedef struct {
@@ -57,13 +59,13 @@ typedef struct {
 typedef struct {
     int numStage; 
 	Ground ground;
-	Tree obstacles[];
+	Tree obstacles[NB_OBSTACLES];
 
 } Stage;
 
 
 //Fonction appelée à chaque frame, elle actualise la fenetre en faisant apparaitre les éléments
-void resfreshElements(SDL_Renderer * renderer, Ground ground, Character character, Tree tree){
+void resfreshElements(SDL_Renderer * renderer, Character character, Stage stage){
 
 	//Créer la fenetre
 	SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
@@ -75,24 +77,24 @@ void resfreshElements(SDL_Renderer * renderer, Ground ground, Character characte
 	SDL_RenderFillRect(renderer, &rectCharacter);
 
 	//Faire apparaitre le ground
-	SDL_SetRenderDrawColor(renderer, ground.color.r, ground.color.g, ground.color.b, ground.color.a);
-	SDL_Rect rectGround = { ground.x, ground.y, ground.width, ground.height }; // x, y, largeur, hauteur
+	SDL_SetRenderDrawColor(renderer, stage.ground.color.r, stage.ground.color.g, stage.ground.color.b, stage.ground.color.a);
+	SDL_Rect rectGround = { stage.ground.x, stage.ground.y, stage.ground.width, stage.ground.height }; // x, y, largeur, hauteur
 	SDL_RenderFillRect(renderer, &rectGround);
 
 	//Faire apparaitre l'arbre
-	SDL_SetRenderDrawColor(renderer, tree.color.r, tree.color.g, tree.color.b, tree.color.a);
-	SDL_Rect rectTree = { tree.x, tree.y, tree.width, tree.height }; // x, y, largeur, hauteur
+	SDL_SetRenderDrawColor(renderer, stage.obstacles[0].color.r, stage.obstacles[0].color.g, stage.obstacles[0].color.b, stage.obstacles[0].color.a);
+	SDL_Rect rectTree = { stage.obstacles[0].x, stage.obstacles[0].y, stage.obstacles[0].width, stage.obstacles[0].height }; // x, y, largeur, hauteur
 	SDL_RenderFillRect(renderer, &rectTree);
 }
 
 
-//Fonction qui fait bouger automatiquement la map
-void movePositionMap(Ground * ground, Tree * tree){
+//Fonction qui fait bouger automatiquement le ground
+void movePositionGround(Stage * stage){
 
-	ground->x -= GROUND_SPEED;
+	stage->ground.x -= GROUND_SPEED;
 
 	//déplacement de l'arbre
-	tree->x -= GROUND_SPEED;
+	stage->obstacles[0].x -= GROUND_SPEED;
 
 }
 
@@ -209,12 +211,17 @@ int main(int argc, const char * argv[]) {
 	bool running = true;
 	SDL_Event event;
 
-	//Initialisation de la Map
+	//Initialisation du stage
+
 	SDL_Color colorGround = {0, 255, 20, 255};
 	Ground ground = {0, POS_GROUND, GROUND_WIDTH, GROUND_HEIGHT, colorGround};  // x, y, width, height, color
 
 	SDL_Color colorTree = {100, 255, 0, 255};
 	Tree tree = {2000, 420, 30, 80, colorTree};  // x, y, width, height, color
+
+	Tree obstacles[NB_OBSTACLES] = {tree};
+
+	Stage stage = {1, ground, obstacles};
 
 	//Initialisation du character
 	SDL_Color colorCharacter = {255, 0, 0, 255};
@@ -229,8 +236,8 @@ int main(int argc, const char * argv[]) {
 
 		movePositionCharacter(&character);
 
-		movePositionMap(&ground, &tree);
-		resfreshElements(renderer, ground, character, tree);
+		movePositionGround(&stage);
+		resfreshElements(renderer, character, stage);
 
 		SDL_RenderPresent(renderer);
 	}
