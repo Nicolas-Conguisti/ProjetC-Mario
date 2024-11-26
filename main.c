@@ -219,9 +219,7 @@ int main(int argc, const char * argv[]) {
 	SDL_Color colorTree = {100, 255, 0, 255};
 	Tree tree = {2000, 420, 30, 80, colorTree};  // x, y, width, height, color
 
-	Tree obstacles[NB_OBSTACLES] = {tree};
-
-	Stage stage = {1, ground, obstacles};
+	Stage stage = {1, ground, {tree}};
 
 	//Initialisation du character
 	SDL_Color colorCharacter = {255, 0, 0, 255};
