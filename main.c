@@ -13,7 +13,7 @@
 
 #define CHARACTER_WIDTH 50
 #define CHARACTER_HEIGHT 70
-#define CHARACTER_SPEED 40
+#define CHARACTER_SPEED 4
 
 #define GROUND_WIDTH 5000
 #define GROUND_HEIGHT 200
@@ -34,6 +34,88 @@ typedef struct {
 	SDL_Color color;
 
 } Character;
+
+
+//CREATION D'UN TABLEAU DE key CLAVIER
+#define LENGTH_TAB 5
+
+//Type key
+typedef struct {
+	SDL_Keycode SDL_KEY;
+	bool isPressed;
+	bool isReleased;
+} Key;
+
+Key keyTab[] = {{SDLK_LEFT, false, false},
+				{SDLK_UP, false, false},
+				{SDLK_RIGHT, false, false},
+				{SDLK_DOWN, false, false},
+				{SDLK_ESCAPE, false, false}
+			   };
+
+//Fonction qui regarde si chaque touche a été pressed/released et actualise le keyTab en conséquence 
+void updateKeyTab(SDL_Event event, Key * keyTab){
+
+	//Parcours des touches du tableau
+	for(int i=0; i<LENGTH_TAB; i++){
+		if(event.key.keysym.sym == keyTab[i].SDL_KEY){
+
+			if(event.type == SDL_KEYDOWN){
+				keyTab[i].isPressed = true;
+				keyTab[i].isReleased = false;
+			}
+			else if(event.type == SDL_KEYUP){
+				keyTab[i].isPressed = false;
+				keyTab[i].isReleased = true;
+			}
+		}
+		else{
+			keyTab[i].isPressed = false;
+			keyTab[i].isReleased = false;
+		}
+	}
+}
+
+void processingKeyTab(Key * keyTab, Character * character, bool * running){
+
+	for(int i=0; i<LENGTH_TAB; i++){
+		Key currentKey = keyTab[i];
+
+		//Si on va à gauche
+		if(currentKey.SDL_KEY == SDLK_LEFT && currentKey.isPressed){
+			character->x -= CHARACTER_SPEED;
+		}
+
+		//Si on va à droite
+		else if(currentKey.SDL_KEY == SDLK_RIGHT && currentKey.isPressed){
+			character->x += CHARACTER_SPEED;
+		}
+
+		//Si on canalise le jump
+		else if(currentKey.SDL_KEY == SDLK_UP && currentKey.isPressed){
+			if(character->isJumping == false){
+				if(character->jumpForce <= 20){
+					character->jumpForce += 2;
+				}
+			}
+		}
+
+		//Si on relache le jump
+		else if(currentKey.SDL_KEY == SDLK_UP && currentKey.isReleased){
+			character->isJumping = true;
+		}
+
+		//Si on descend
+		else if(currentKey.SDL_KEY == SDLK_DOWN && currentKey.isPressed){
+			character->y += CHARACTER_SPEED;
+		}
+
+		//Si on presse esc pour quitter le jeu
+		else if(currentKey.SDL_KEY == SDLK_ESCAPE && (currentKey.isPressed || currentKey.isReleased)){
+			(*running) = false;
+		}
+	}
+}
 
 //Type Ground
 typedef struct {
@@ -134,8 +216,8 @@ void movePositionCharacter(Character * character){
 
 	//On déclanche le saut
 	if(character->isJumping){
-		character->jumpForce -= 5;
-		character->y -= (CHARACTER_SPEED + character->jumpForce/2);
+		character->jumpForce -= 1;
+		character->y -= (CHARACTER_SPEED + character->jumpForce);
 	}
 
 	//Si le character est au sol, isJumping est false
@@ -173,18 +255,17 @@ void verifyEventKeyPressed(SDL_Event event, bool * running, Character * characte
 
 			case SDLK_UP:
 
-
 				//Si on relache le jump
 				if(event.type == SDL_KEYUP){
-					character->jumpForce += 10;
+					character->jumpForce += 1;
 					character->isJumping = true;
 				}
 
 				//Si on canalise le jump
 				if(event.type == SDL_KEYDOWN){
 					if(character->isJumping == false){
-						if(character->jumpForce <= 40){
-							character->jumpForce += 10;
+						if(character->jumpForce <= 4){
+							character->jumpForce += 11;
 						}
 					}
 				}
@@ -238,9 +319,11 @@ int main(int argc, const char * argv[]) {
 		
 		while(SDL_PollEvent(&event)){
 			verifyEventQuit(event, &running);
-			verifyEventKeyPressed(event, &running, &character);
+			//verifyEventKeyPressed(event, &running, &character);
+			updateKeyTab(event, keyTab);
+			
 		}
-
+		processingKeyTab(keyTab, &character, &running);
 		movePositionCharacter(&character);
 
 		movePositionGround(&stage);
