@@ -43,78 +43,45 @@ typedef struct {
 typedef struct {
 	SDL_Keycode SDL_KEY;
 	bool isPressed;
-	bool isReleased;
 } Key;
 
-Key keyTab[] = {{SDLK_LEFT, false, false},
-				{SDLK_UP, false, false},
-				{SDLK_RIGHT, false, false},
-				{SDLK_DOWN, false, false},
-				{SDLK_ESCAPE, false, false}
-			   };
+
+Key keyTab[SDL_NUM_SCANCODES];
 
 //Fonction qui regarde si chaque touche a été pressed/released et actualise le keyTab en conséquence 
 void updateKeyTab(SDL_Event event, Key * keyTab){
-
-	//Parcours des touches du tableau
-	for(int i=0; i<LENGTH_TAB; i++){
-		if(event.key.keysym.sym == keyTab[i].SDL_KEY){
-
-			if(event.type == SDL_KEYDOWN){
-				keyTab[i].isPressed = true;
-				keyTab[i].isReleased = false;
-			}
-			else if(event.type == SDL_KEYUP){
-				keyTab[i].isPressed = false;
-				keyTab[i].isReleased = true;
-			}
-		}
-		else{
-			keyTab[i].isPressed = false;
-			keyTab[i].isReleased = false;
-		}
-	}
+	if(event.type == SDL_KEYDOWN) keyTab[event.key.keysym.scancode].isPressed = true;
+	else if(event.type == SDL_KEYUP) keyTab[event.key.keysym.scancode].isPressed = false;
 }
+
+
+
+bool is_pressed(SDL_Scancode k) {
+	return keyTab[k].isPressed;
+}
+
 
 void processingKeyTab(Key * keyTab, Character * character, bool * running){
 
-	for(int i=0; i<LENGTH_TAB; i++){
-		Key currentKey = keyTab[i];
-
-		//Si on va à gauche
-		if(currentKey.SDL_KEY == SDLK_LEFT && currentKey.isPressed){
-			character->x -= CHARACTER_SPEED;
-		}
-
-		//Si on va à droite
-		if(currentKey.SDL_KEY == SDLK_RIGHT && currentKey.isPressed){
-			character->x += CHARACTER_SPEED;
-		}
-
-		//Si on canalise le jump
-		if(currentKey.SDL_KEY == SDLK_UP && currentKey.isPressed){
-			if(character->isJumping == false){
-				if(character->jumpForce <= 10){
-					character->jumpForce += 5;
-				}
+	//Si on va à gauche
+	if(is_pressed(SDL_SCANCODE_LEFT)) character->x -= CHARACTER_SPEED;
+	else if(is_pressed(SDL_SCANCODE_RIGHT)) character->x += CHARACTER_SPEED;
+	
+	//Si on canalise le jump
+	if(is_pressed(SDL_SCANCODE_UP)){
+		if(character->isJumping == false){
+			if(character->jumpForce <= 10){
+				character->jumpForce += 5;
 			}
 		}
-
-		//Si on relache le jump
-		if(currentKey.SDL_KEY == SDLK_UP && currentKey.isReleased){
-			character->isJumping = true;
-		}
-
-		//Si on descend
-		if(currentKey.SDL_KEY == SDLK_DOWN && currentKey.isPressed){
-			character->y += CHARACTER_SPEED;
-		}
-
-		//Si on presse esc pour quitter le jeu
-		if(currentKey.SDL_KEY == SDLK_ESCAPE && (currentKey.isPressed || currentKey.isReleased)){
-			(*running) = false;
-		}
 	}
+
+	//Si on relache le jump 
+	if(!is_pressed(SDL_SCANCODE_UP) && character->jumpForce > 0) character->isJumping = true;
+	else if(is_pressed(SDL_SCANCODE_DOWN)) character->y += CHARACTER_SPEED;
+
+	//Si on presse esc pour quitter le jeu
+	if(is_pressed(SDL_SCANCODE_ESCAPE)) (*running) = false; 
 }
 
 //Type Ground
@@ -142,9 +109,7 @@ typedef struct {
     int numStage; 
 	Ground ground;
 	Tree obstacles[NB_OBSTACLES];
-
 } Stage;
-
 
 //Fonction appelée à chaque frame, elle actualise la fenetre en faisant apparaitre les éléments
 void resfreshElements(SDL_Renderer * renderer, Character character, Stage stage){
@@ -242,7 +207,8 @@ void verifyEventQuit(SDL_Event event, bool * running){
 
 
 int main(int argc, const char * argv[]) {
-
+	for (int i  =0; i<SDL_NUM_SCANCODES; i++)
+		keyTab[i] = (Key) {i, false};
 	//Initialisation de la fenetre
 	SDL_Init(SDL_INIT_VIDEO);
 	SDL_Window *window;
@@ -273,8 +239,8 @@ int main(int argc, const char * argv[]) {
 		while(SDL_PollEvent(&event)){
 			verifyEventQuit(event, &running);
 			updateKeyTab(event, keyTab);
-			processingKeyTab(keyTab, &character, &running);
 		}
+		processingKeyTab(keyTab, &character, &running);
 		
 		movePositionCharacter(&character);
 
